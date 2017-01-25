@@ -97,7 +97,35 @@ int beargit_add(const char* filename) {
 int beargit_rm(const char* filename) {
   /* COMPLETE THE REST */
 
-  return 0;
+  char line[FILENAME_SIZE];
+  char* curIdxName = ".beargit/.index";
+  char* newIdxName = ".beargit/.newindex";
+  FILE* fin = fopen(curIdxName, "r");
+  FILE* fout = fopen(newIdxName, "w");
+
+  while(fgets(line, sizeof(line), fin))
+  {
+    strtok(line, "\n");
+    if(strcmp(line, filename) == 0)
+    {
+      while(fgets(line, sizeof(line), fin))
+      {
+        fprintf(fout, "%s", line);
+      }
+
+      fclose(fin);
+      fclose(fout);
+      fs_mv(newIdxName, curIdxName);
+      return 0;
+    }
+
+    fprintf(fout, "%s\n", line);
+  }
+
+  fclose(fin);
+  fclose(fout);
+  fprintf(stderr, "ERROR: File %s not tracked\n", filename);
+  return 1;
 }
 
 /* beargit commit -m <msg>
@@ -110,11 +138,43 @@ const char* go_bears = "GO BEARS!";
 
 int is_commit_msg_ok(const char* msg) {
   /* COMPLETE THE REST */
+
+  //TODO KMP
+
+  char* msgP = &(*msg);
+  while(*msgP != 0)
+  {
+    char* checkP = &(*go_bears);
+    char* tmpP = &(*msgP);
+    while(*tmpP != 0 && *checkP != 0)
+    {
+      if(*tmpP != *checkP) break;
+      tmpP++;
+      checkP++;
+    }
+
+    if(*checkP == 0) return 1;
+    msgP++;
+  }
+
   return 0;
 }
 
 void next_commit_id(char* commit_id) {
   /* COMPLETE THE REST */
+  char* firstSmall = &(*commit_id);
+
+  while(*firstSmall != 0 && (*firstSmall == 'c' || *firstSmall == '0')) firstSmall++;
+
+  if(*firstSmall == '1') *firstSmall = '6';
+  else if(*firstSmall == '6') *firstSmall = 'c';
+
+  char* cleaner = &(*commit_id);
+  while(cleaner != firstSmall)
+  {
+    *cleaner = '1';
+    cleaner++;
+  }
 }
 
 int beargit_commit(const char* msg) {
@@ -127,7 +187,35 @@ int beargit_commit(const char* msg) {
   read_string_from_file(".beargit/.prev", commit_id, COMMIT_ID_SIZE);
   next_commit_id(commit_id);
 
+  //!!!!!!!!!!!!!!!!!!!!!!TODO Other strcat change
+  char newCommitPath[20 + COMMIT_ID_SIZE] = ".beargit/";
+  strcat(newCommitPath, commit_id);
   /* COMPLETE THE REST */
+  fs_mkdir(newCommitPath);
+  char oldPrevPath[sizeof(newCommitPath)];
+  sprintf(oldPrevPath, "%s/.prev", newCommitPath);
+  fs_cp(".beargit/.prev", oldPrevPath);
+
+  char oldIndexPath[sizeof(newCommitPath)];
+  sprintf(oldIndexPath, "%s/.index", newCommitPath);
+  fs_cp(".beargit/.index", oldIndexPath);
+
+  printf("%s\n", oldIndexPath);
+
+  FILE* fin = fopen(".beargit/.index", "r");
+  char fileName[FILENAME_SIZE];
+  while(fgets(fileName, FILENAME_SIZE, fin))
+  {
+    strtok(fileName, "\n");
+    char oldFilePath[sizeof(newCommitPath)+sizeof(fileName)];
+    sprintf(oldFilePath, "%s/%s", newCommitPath, fileName);
+    fs_cp(fileName, oldFilePath);
+  }
+
+  fclose(fin);
+  write_string_to_file(".beargit/.newPrev", commit_id);
+  write_string_to_file(strcat(newCommitPath, "/.msg"), msg);
+  fs_mv(".beargit/.newPrev", ".beargit/.prev");
 
   return 0;
 }
@@ -140,7 +228,25 @@ int beargit_commit(const char* msg) {
 
 int beargit_status() {
   /* COMPLETE THE REST */
+  char fileName[FILENAME_SIZE];
+  int count = 0;
+  printf("Tracked files:\n");
+  FILE* fin = fopen(".beargit/.index", "r");
+  do
+  {
+    if(fgets(fileName, FILENAME_SIZE, fin) == NULL)
+    {
+      break;
+    }
+    else
+    {
+      printf("%s", fileName);
+      count++;
+    }
+  }while(1);
 
+  fclose(fin);
+  printf("%d files total\n", count);
   return 0;
 }
 
@@ -152,6 +258,29 @@ int beargit_status() {
 
 int beargit_log() {
   /* COMPLETE THE REST */
+  char commit_id[COMMIT_ID_SIZE];
+  read_string_from_file(".beargit/.prev", commit_id, COMMIT_ID_SIZE);
+  if(*commit_id == '0') 
+  {
+    fprintf(stderr, "ERROR: There are no commits!\n");
+    return 1;
+  }
+
+  fprintf(stdout, "\n");
+  do
+  {
+    fprintf(stdout, "commit %s\n", commit_id);
+    char prevPath[20+COMMIT_ID_SIZE];
+    sprintf(prevPath, ".beargit/%s", commit_id);
+    char copyPrevPath[sizeof(prevPath)];
+    strcpy(copyPrevPath, prevPath);
+    read_string_from_file(strcat(prevPath, "/.prev"), commit_id, COMMIT_ID_SIZE);
+
+    char msg[MSG_SIZE];
+    read_string_from_file(strcat(copyPrevPath, "/.msg"), msg, MSG_SIZE);
+    fprintf(stdout, "%s\n", msg);
+
+  }while(*commit_id != '0');
 
   return 0;
 }
