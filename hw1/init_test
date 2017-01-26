@@ -24,21 +24,31 @@ if [[ ! "$PATH" =~ "$PWD" ]]; then
 fi
 
 cd test
-# echo "tttt" >> test1.c
-# echo "dddd" >> test1.c
-# echo "" >> test1.c
+echo "tttt" >> test1.c
+echo "dddd" >> test1.c
+echo "" >> test1.c
 
-# echo "" >> lkcjsdlkjclskdjdjkkdkdjkldjlkjlkjsldkjlskdjlkjdkjdkjlsjdklsjdlk
-# echo "hh" >> lkcjsdlkjclskdjdjkkdkdjkldjlkjlkjsldkjlskdjlkjdkjdkjlsjdklsjdlk
+echo "" >> lkcjsdlkjclskdjdjkkdkdjkldjlkjlkjsldkjlskdjlkjdkjdkjlsjdklsjdlk
+echo "hh" >> lkcjsdlkjclskdjdjkkdkdjkldjlkjlkjsldkjlskdjlkjdkjdkjlsjdklsjdlk
 
-# beargit init
+beargit init
 
-# beargit add test1.c
-# beargit add lkcjsdlkjclskdjdjkkdkdjkldjlkjlkjsldkjlskdjlkjdkjdkjlsjdklsjdlk
+beargit add test1.c
+beargit add lkcjsdlkjclskdjdjkkdkdjkldjlkjlkjsldkjlskdjlkjdkjdkjlsjdklsjdlk
 
-# beargit status
+beargit status
 
-# beargit commit -m "djijijijijiGO BEARs!"
-# beargit commit -m "GO BEARS!"
+beargit commit -m "djijijijijiGO BEARs!"
+beargit commit -m "GO BEARS!"
 
-# beargit log
+beargit commit -m " wewwewddfdgobearsGO BEARSd!GO BEARS! "
+
+beargit rm test1.c
+
+beargit commit -m "GGGO BEARS!h"
+
+beargit rm lkcjsdlkjclskdjdjkkdkdjkldjlkjlkjsldkjlskdjlkjdkjdkjlsjdklsjdlk
+
+beargit commit -m "GO BEARS!"
+
+beargit log
