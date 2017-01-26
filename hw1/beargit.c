@@ -200,8 +200,6 @@ int beargit_commit(const char* msg) {
   sprintf(oldIndexPath, "%s/.index", newCommitPath);
   fs_cp(".beargit/.index", oldIndexPath);
 
-  printf("%s\n", oldIndexPath);
-
   FILE* fin = fopen(".beargit/.index", "r");
   char fileName[FILENAME_SIZE];
   while(fgets(fileName, FILENAME_SIZE, fin))

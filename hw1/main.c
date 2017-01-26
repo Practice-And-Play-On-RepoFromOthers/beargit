@@ -17,7 +17,6 @@ int check_initialized(void) {
 }
 
 int check_filename(const char* filename) {
-  printf("%d\n", strlen(filename));
   if (strlen(filename) > FILENAME_SIZE-1 || strlen(filename) == 0)
     return 0;
 
