@@ -335,7 +335,7 @@ int get_branch_number(const char* branch_name) {
 
   int branch_index = -1;
   int counter = 0;
-  char line[FILENAME_SIZE];
+  char line[BRANCHNAME_SIZE];
   while(fgets(line, sizeof(line), fbranches)) {
     strtok(line, "\n");
     if (strcmp(line, branch_name) == 0) {
@@ -358,7 +358,27 @@ int get_branch_number(const char* branch_name) {
 
 int beargit_branch() {
   /* COMPLETE THE REST */
+  char current_branch[BRANCHNAME_SIZE];
+  read_string_from_file(".beargit/.current_branch", current_branch, BRANCHNAME_SIZE);
+  FILE* fin = fopen(".beargit/.branches", "r");
+  char line[BRANCHNAME_SIZE];
+  while(fgets(line, sizeof(line), fin))
+  {
+    strtok(line, "\n");
+    if(current_branch == 0) 
+    {
+      fprintf(stdout, "%s\n", line);
+    }
+    else
+    {
+      if(strcmp(current_branch, line) == 0)
+      {
+        fprintf(stdout, "* %s\n", line);
+      }
+    }
+  }
 
+  fclose(fin);
   return 0;
 }
 
@@ -370,11 +390,27 @@ int beargit_branch() {
 
 int checkout_commit(const char* commit_id) {
   /* COMPLETE THE REST */
+
   return 0;
 }
 
 int is_it_a_commit_id(const char* commit_id) {
   /* COMPLETE THE REST */
+  if(commit_id == 0 || strlen(commit_id) != COMMIT_ID_BYTES) return 0;
+  for(int i = 0; i < COMMIT_ID_BYTES; i++)
+  {
+    int find = 0;
+    for(int j = 0; j < strlen(digits); j++)
+    {
+      if(digits[j] == commit_id[i])
+      {
+        find = 1;
+        break;
+      }
+    }
+    if(!find) return 0;
+  }
+  
   return 1;
 }
 
