@@ -390,6 +390,49 @@ int beargit_branch() {
 
 int checkout_commit(const char* commit_id) {
   /* COMPLETE THE REST */
+  //Remove current indexed files
+  FILE* fin = fopen(".beargit/.index", "r");
+  char line[FILENAME_SIZE];
+  while(fgets(line, sizeof(line), fin))
+  {
+    strotk(line, "\n");
+    fs_rm(line);
+  }
+
+  fclose(fin);
+
+  //Copy Index checked out
+
+  fs_rm(".beargit/.index");
+  if(commit_id != '0')
+  {
+    char checkoutDir[COMMIT_ID_SIZE + 10];
+    char checkoutIndex[COMMIT_ID_SIZE+20];
+    sprintf(checkoutDir, ".beargit/%s", commit_id);
+    sprintf(checkoutIndex, "%s/.index", checkoutDir);
+    fs_cp(checkoutIndex, ".beargit/.index");
+  }
+  else
+  {
+      FILE* fout = fopen(".beargit/.index", "w");
+      fclose(fout);
+  }
+
+  //Copy the files from checked out commit
+  fin = fopen(".beargit/.index", "r");
+  while(fgets(line, sizeof(line), fin))
+  {
+    strotk(line, "\n");
+    char checkoutFile[strlen(checkoutDir) + sizeof(line)];
+    sprintf(checkoutFile, "%s/%s", checkoutDir, line);
+    fs_cp(checkoutFile, line);
+  }
+
+  fclose(fin);
+
+  //Set .beargit/.prev to the commit.
+  write_string_to_file(".beargit/.prev", commit_id);
+
 
   return 0;
 }
