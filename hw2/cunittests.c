@@ -167,7 +167,7 @@ int cunittester()
    }
 
    /* Add tests to the Suite #2 */
-   if (NULL == CU_add_test(pSuite2, "Log output test", simple_sample_test))
+   if (NULL == CU_add_test(pSuite2, "Log output test", simple_log_test))
    {
       CU_cleanup_registry();
       return CU_get_error();

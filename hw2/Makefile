@@ -1,4 +1,4 @@
-CUNIT := -L/home/ff/cs61c/cunit/install/lib -I/home/ff/cs61c/cunit/install/include -lcunit
+CUNIT := -L/Usr/local/Cellar/cunit/2.1-3/lib -I/Usr/local/Cellar/cunit/2.1-3/include -lcunit
 
 beargit: main.c beargit.c util.c beargit.h util.h
 	gcc -g -std=c99 main.c beargit.c util.c -o beargit

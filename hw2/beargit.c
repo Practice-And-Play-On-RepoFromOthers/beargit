@@ -180,6 +180,8 @@ void next_commit_id_hw1(char* commit_id) {
     *cleaner = '1';
     cleaner++;
   }
+
+  commit_id -= COMMIT_ID_BRANCH_BYTES;
 }
 
 int beargit_commit_hw1(const char* msg) {
@@ -365,7 +367,7 @@ int beargit_branch() {
   while(fgets(line, sizeof(line), fin))
   {
     strtok(line, "\n");
-    if(current_branch == 0) 
+    if(strlen(current_branch) == 0) 
     {
       fprintf(stdout, "%s\n", line);
     }
@@ -395,7 +397,7 @@ int checkout_commit(const char* commit_id) {
   char line[FILENAME_SIZE];
   while(fgets(line, sizeof(line), fin))
   {
-    strotk(line, "\n");
+    strtok(line, "\n");
     fs_rm(line);
   }
 
@@ -404,31 +406,31 @@ int checkout_commit(const char* commit_id) {
   //Copy Index checked out
 
   fs_rm(".beargit/.index");
-  if(commit_id != '0')
+  if(*commit_id != '0')
   {
     char checkoutDir[COMMIT_ID_SIZE + 10];
     char checkoutIndex[COMMIT_ID_SIZE+20];
     sprintf(checkoutDir, ".beargit/%s", commit_id);
     sprintf(checkoutIndex, "%s/.index", checkoutDir);
     fs_cp(checkoutIndex, ".beargit/.index");
+
+      //Copy the files from checked out commit
+    fin = fopen(".beargit/.index", "r");
+    while(fgets(line, sizeof(line), fin))
+    {
+      strtok(line, "\n");
+      char checkoutFile[strlen(checkoutDir) + sizeof(line)];
+      sprintf(checkoutFile, "%s/%s", checkoutDir, line);
+      fs_cp(checkoutFile, line);
+    }
+
+    fclose(fin);
   }
   else
   {
       FILE* fout = fopen(".beargit/.index", "w");
       fclose(fout);
   }
-
-  //Copy the files from checked out commit
-  fin = fopen(".beargit/.index", "r");
-  while(fgets(line, sizeof(line), fin))
-  {
-    strotk(line, "\n");
-    char checkoutFile[strlen(checkoutDir) + sizeof(line)];
-    sprintf(checkoutFile, "%s/%s", checkoutDir, line);
-    fs_cp(checkoutFile, line);
-  }
-
-  fclose(fin);
 
   //Set .beargit/.prev to the commit.
   write_string_to_file(".beargit/.prev", commit_id);

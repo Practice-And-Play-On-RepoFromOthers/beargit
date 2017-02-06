@@ -1,5 +1,8 @@
 #!/bin/bash
 
+make clean
+make beargit-unittest
+
 if [ ! -f "beargit.c" ]; then
   echo "ERROR: Need to run "source init_test" from your source directory"
   return
