@@ -86,12 +86,14 @@ void simple_log_test(void)
     int retval;
     retval = beargit_init();
     CU_ASSERT(0==retval);
+    FILE* asdf = fopen("asdf.txt", "w");
+    fclose(asdf);
     retval = beargit_add("asdf.txt");
     CU_ASSERT(0==retval);
     run_commit(&commit_list, "GO BEARS!1");
     run_commit(&commit_list, "GO BEARS!2");
     run_commit(&commit_list, "GO BEARS!3");
-    fs_rm("TEST_STDOUT");
+
     retval = beargit_log();
     CU_ASSERT(0==retval);
 
@@ -122,9 +124,11 @@ void simple_log_test(void)
       cur_commit = cur_commit->next;
     }
 
-    // First line is empty
+    // Last line is empty
     CU_ASSERT_PTR_NOT_NULL(fgets(line, LINE_SIZE, fstdout));
-    CU_ASSERT(!strcmp(line,""));
+    CU_ASSERT(!strcmp(line,"\n"));
+
+    CU_ASSERT_PTR_NULL(fgets(line, LINE_SIZE, fstdout));
 
     // It's the end of output
     CU_ASSERT(feof(fstdout));
