@@ -271,10 +271,9 @@ int beargit_log() {
     return 1;
   }
 
-  fprintf(stdout, "\n");
   do
   {
-    fprintf(stdout, "commit %s\n", commit_id);
+    fprintf(stdout, "\ncommit %s\n", commit_id);
     char prevPath[20+COMMIT_ID_SIZE];
     sprintf(prevPath, ".beargit/%s", commit_id);
     char copyPrevPath[sizeof(prevPath)];
@@ -283,10 +282,11 @@ int beargit_log() {
 
     char msg[MSG_SIZE];
     read_string_from_file(strcat(copyPrevPath, "/.msg"), msg, MSG_SIZE);
-    fprintf(stdout, "%s\n", msg);
+    fprintf(stdout, "    %s\n", msg);
 
   }while(*commit_id != '0');
 
+  fprintf(stdout, "\n");
   return 0;
 }
 

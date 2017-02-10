@@ -82,6 +82,8 @@ void run_commit(struct commit** commit_list, const char* msg) {
 
 void simple_log_test(void)
 {
+    const int LINE_SIZE = 512;
+    char line[LINE_SIZE];
     struct commit* commit_list = NULL;
     int retval;
     retval = beargit_init();
@@ -99,9 +101,6 @@ void simple_log_test(void)
 
     struct commit* cur_commit = commit_list;
 
-    const int LINE_SIZE = 512;
-    char line[LINE_SIZE];
-
     FILE* fstdout = fopen("TEST_STDOUT", "r");
     CU_ASSERT_PTR_NOT_NULL(fstdout);
 
@@ -110,17 +109,18 @@ void simple_log_test(void)
 
       // First line is empty
       CU_ASSERT_PTR_NOT_NULL(fgets(line, LINE_SIZE, fstdout));
+      printf(line);
       CU_ASSERT(!strcmp(line,"\n"));
 
       // Second line is commit -- don't check the ID.
       CU_ASSERT_PTR_NOT_NULL(fgets(line, LINE_SIZE, fstdout));
       CU_ASSERT(!strncmp(line,"commit", strlen("commit")));
-
+      printf(line);
       // Third line is msg
       sprintf(refline, "    %s\n", cur_commit->msg);
       CU_ASSERT_PTR_NOT_NULL(fgets(line, LINE_SIZE, fstdout));
       CU_ASSERT_STRING_EQUAL(line, refline);
-
+      printf(line);
       cur_commit = cur_commit->next;
     }
 
@@ -137,6 +137,34 @@ void simple_log_test(void)
     free_commit_list(&commit_list);
 }
 
+/* Test scenario:
+ * checkout one branch : "zerobranch" on 00 commit
+ * add file "poor.txt", 
+ * checkout back to "master", expect "poor.txt" disappears
+ * commit two commits, first with "file1.txt", second rm file
+ * create one branch: testbranch
+ * create one more branch: testbranch2
+ * checkout testbranch, expect no files
+ * add file "file2.txt", commit
+ * checkout testbranch2, expect no files
+ * checkout testbranch, expect "file2.txt"
+ * checkout master's first commit, expect "file1.txt"
+ * commit expect error
+ */
+void simple_integrate_checkout_test(void)
+{
+
+}
+
+void simple_branch_test(void)
+{
+
+}
+
+void simple_checkout_test(void)
+{
+  
+}
 /* The main() function for setting up and running the tests.
  * Returns a CUE_SUCCESS on successful running, another
  * CUnit error code on failure.
