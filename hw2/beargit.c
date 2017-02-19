@@ -509,7 +509,7 @@ int beargit_checkout(const char* arg, int new_branch) {
 
   // File for the branch we are changing into.
   char branch_file[strlen(".beargit/.branch_") + BRANCHNAME_SIZE];
-  strcat(branch_file, branch_name);
+  sprintf(branch_file, ".beargit/.branch_%s", branch_name);
 
   // Update the branch file if new branch is created (now it can't go wrong anymore)
   if (new_branch) {

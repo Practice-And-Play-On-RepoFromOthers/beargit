@@ -148,9 +148,77 @@ void simple_log_test(void)
  * checkout master's first commit, expect "file1.txt"
  * commit expect error
  */
-void simple_integrate_checkout_test(void)
+void simple_integrate_beargit_test(void)
 {
+    const int LINE_SIZE = 512;
+    char line[LINE_SIZE];
+    int retval;
+    struct commit* commit_list = NULL;
 
+    retval = beargit_init();
+    CU_ASSERT(0==retval);
+
+    retval = beargit_checkout("zerobranch", 1);
+    CU_ASSERT(!retval);
+
+    FILE* asdf = fopen("poor.txt", "w");
+    fclose(asdf);
+    retval = beargit_add("poor.txt");
+    CU_ASSERT(!retval);
+
+    retval = beargit_checkout("master", 0);
+    CU_ASSERT(!retval);
+    retval = beargit_status();
+    CU_ASSERT(!retval);
+
+    asdf = fopen("file1.txt", "w");
+    fclose(asdf);
+    retval = beargit_add("file1.txt");
+    CU_ASSERT(!retval);
+
+    run_commit(&commit_list, "GO BEARS!1");
+    retval = beargit_rm("file1.txt");
+    CU_ASSERT(!retval);
+    run_commit(&commit_list, "GO BEARS!2");
+
+    retval = beargit_checkout("testbranch1", 1);
+    CU_ASSERT(!retval);
+
+    asdf = fopen("file2.txt", "w");
+    fclose(asdf);
+    retval = beargit_add("file2.txt");
+    CU_ASSERT(!retval);
+    beargit_commit("GO BEARS!3");
+
+    beargit_checkout("6666666666111111111111111111111111111111", 0);
+    beargit_status();
+    beargit_log();
+    beargit_branch();
+    beargit_commit("GO BEARS!4");
+    beargit_checkout("zerobranch", 0);
+    beargit_log();
+    beargit_checkout("testbranch1", 0);
+    beargit_status();
+    beargit_log();
+    beargit_checkout("master", 0);
+    beargit_status();
+    beargit_log();
+    beargit_checkout("final", 1);
+    beargit_status();
+    beargit_log();
+    beargit_branch();
+
+    FILE* fstdout = fopen("TEST_STDOUT", "r");
+    CU_ASSERT_PTR_NOT_NULL(fstdout);
+
+    CU_ASSERT_PTR_NOT_NULL(fgets(line, LINE_SIZE, fstdout));
+    CU_ASSERT_STRING_EQUAL(line, "Tracked files:\n");
+
+    CU_ASSERT_PTR_NOT_NULL(fgets(line, LINE_SIZE, fstdout));
+    CU_ASSERT_STRING_EQUAL(line, "0 files total\n");
+
+
+    fclose(fstdout);
 }
 
 void simple_branch_test(void)
@@ -203,20 +271,46 @@ void simple_checkout_test(void)
     retval = beargit_branch();
     CU_ASSERT(!retval);
 
+    retval = beargit_checkout("master", 1);
+    CU_ASSERT(retval);
+
     retval = beargit_checkout("master", 0);
     CU_ASSERT(!retval);
 
-    retval = beargit_checkout("haha", 0);
-    CU_ASSERT(!retval);
+    retval = beargit_checkout("6666666666666666666666666666666666666666", 0);
+    CU_ASSERT(retval);
 
     retval = beargit_branch();
     CU_ASSERT(!retval);
 
-    FILE* fstdout = fopen("TEST_STDOUT", "r");
+    FILE* fstdout = fopen("TEST_STDERR", "r");
     CU_ASSERT_PTR_NOT_NULL(fstdout);
 
     CU_ASSERT_PTR_NOT_NULL(fgets(line, LINE_SIZE, fstdout));
-    CU_ASSERT_STRING_EQUAL(line, "No branch haha exists\n");
+    CU_ASSERT_STRING_EQUAL(line, "ERROR: No branch haha exists\n");
+
+    CU_ASSERT_PTR_NOT_NULL(fgets(line, LINE_SIZE, fstdout));
+    CU_ASSERT_STRING_EQUAL(line, "ERROR: A branch named master already exists\n");
+
+    CU_ASSERT_PTR_NOT_NULL(fgets(line, LINE_SIZE, fstdout));
+    CU_ASSERT_STRING_EQUAL(line, "ERROR: Commit 6666666666666666666666666666666666666666 does not exist\n");
+    
+    fclose(fstdout);
+
+    fstdout = fopen("TEST_STDOUT", "r");
+    CU_ASSERT_PTR_NOT_NULL(fstdout);
+
+    CU_ASSERT_PTR_NOT_NULL(fgets(line, LINE_SIZE, fstdout));
+    CU_ASSERT_STRING_EQUAL(line, "  master\n");
+
+    CU_ASSERT_PTR_NOT_NULL(fgets(line, LINE_SIZE, fstdout));
+    CU_ASSERT_STRING_EQUAL(line, "* haha\n");
+
+    CU_ASSERT_PTR_NOT_NULL(fgets(line, LINE_SIZE, fstdout));
+    CU_ASSERT_STRING_EQUAL(line, "* master\n");
+
+    CU_ASSERT_PTR_NOT_NULL(fgets(line, LINE_SIZE, fstdout));
+    CU_ASSERT_STRING_EQUAL(line, "  haha\n");
 
     // CU_ASSERT_PTR_NOT_NULL(fgets(line, LINE_SIZE, fstdout));
     // CU_ASSERT_STRING_EQUAL(line, "  master\n");
@@ -241,6 +335,7 @@ int cunittester()
    CU_pSuite pSuite2 = NULL;
    CU_pSuite pSuite3 = NULL;
    CU_pSuite pSuite4 = NULL;
+   CU_pSuite pSuite5 = NULL;
 
    /* initialize the CUnit test registry */
    if (CUE_SUCCESS != CU_initialize_registry())
@@ -294,6 +389,19 @@ int cunittester()
 
    /* Add tests to the Suite #2 */
    if (NULL == CU_add_test(pSuite4, "Simple checkout test", simple_checkout_test))
+   {
+      CU_cleanup_registry();
+      return CU_get_error();
+   }
+
+   pSuite5 = CU_add_suite("Suite_5", init_suite, clean_suite);
+   if (NULL == pSuite5) {
+      CU_cleanup_registry();
+      return CU_get_error();
+   }
+
+   /* Add tests to the Suite #2 */
+   if (NULL == CU_add_test(pSuite5, "Simple integrated beargit test", simple_integrate_beargit_test))
    {
       CU_cleanup_registry();
       return CU_get_error();
