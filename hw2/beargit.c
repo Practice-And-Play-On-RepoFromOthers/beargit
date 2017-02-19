@@ -369,13 +369,17 @@ int beargit_branch() {
     strtok(line, "\n");
     if(strlen(current_branch) == 0) 
     {
-      fprintf(stdout, "%s\n", line);
+      fprintf(stdout, "  %s\n", line);
     }
     else
     {
       if(strcmp(current_branch, line) == 0)
       {
         fprintf(stdout, "* %s\n", line);
+      }
+      else
+      {
+        fprintf(stdout, "  %s\n", line);
       }
     }
   }
@@ -462,7 +466,7 @@ int is_it_a_commit_id(const char* commit_id) {
 int beargit_checkout(const char* arg, int new_branch) {
   // Get the current branch
   char current_branch[BRANCHNAME_SIZE];
-  read_string_from_file(".beargit/.current_branch", "current_branch", BRANCHNAME_SIZE);
+  read_string_from_file(".beargit/.current_branch", current_branch, BRANCHNAME_SIZE);
 
   // If not detached, update the current branch by storing the current HEAD into that branch's file...
   // Even if we cancel later, this is still ok.
@@ -495,16 +499,16 @@ int beargit_checkout(const char* arg, int new_branch) {
   int branch_exists = (get_branch_number(branch_name) >= 0);
 
   // Check for errors.
-  if (!(!branch_exists || !new_branch)) {
+  if (branch_exists && new_branch) {
     fprintf(stderr, "ERROR: A branch named %s already exists\n", branch_name);
     return 1;
-  } else if (!branch_exists && new_branch) {
+  } else if (!branch_exists && !new_branch) {
     fprintf(stderr, "ERROR: No branch %s exists\n", branch_name);
     return 1;
   }
 
   // File for the branch we are changing into.
-  char* branch_file = ".beargit/.branch_"; 
+  char branch_file[strlen(".beargit/.branch_") + BRANCHNAME_SIZE];
   strcat(branch_file, branch_name);
 
   // Update the branch file if new branch is created (now it can't go wrong anymore)

@@ -109,18 +109,15 @@ void simple_log_test(void)
 
       // First line is empty
       CU_ASSERT_PTR_NOT_NULL(fgets(line, LINE_SIZE, fstdout));
-      printf(line);
       CU_ASSERT(!strcmp(line,"\n"));
 
       // Second line is commit -- don't check the ID.
       CU_ASSERT_PTR_NOT_NULL(fgets(line, LINE_SIZE, fstdout));
       CU_ASSERT(!strncmp(line,"commit", strlen("commit")));
-      printf(line);
       // Third line is msg
       sprintf(refline, "    %s\n", cur_commit->msg);
       CU_ASSERT_PTR_NOT_NULL(fgets(line, LINE_SIZE, fstdout));
       CU_ASSERT_STRING_EQUAL(line, refline);
-      printf(line);
       cur_commit = cur_commit->next;
     }
 
@@ -158,13 +155,82 @@ void simple_integrate_checkout_test(void)
 
 void simple_branch_test(void)
 {
+    const int LINE_SIZE = 512;
+    char line[LINE_SIZE];
+    int retval;
+    retval = beargit_init();
+    CU_ASSERT(0==retval);
 
+    retval = beargit_branch();
+    CU_ASSERT(!retval);
+
+    retval = beargit_checkout("haha", 1);
+    CU_ASSERT(!retval);
+
+    retval = beargit_branch();
+    CU_ASSERT(!retval);
+
+    FILE* fstdout = fopen("TEST_STDOUT", "r");
+    CU_ASSERT_PTR_NOT_NULL(fstdout);
+
+    CU_ASSERT_PTR_NOT_NULL(fgets(line, LINE_SIZE, fstdout));
+    CU_ASSERT_STRING_EQUAL(line, "* master\n");
+
+    CU_ASSERT_PTR_NOT_NULL(fgets(line, LINE_SIZE, fstdout));
+    CU_ASSERT_STRING_EQUAL(line, "  master\n");
+    CU_ASSERT_PTR_NOT_NULL(fgets(line, LINE_SIZE, fstdout));
+    CU_ASSERT_STRING_EQUAL(line, "* haha\n");
+    
+    CU_ASSERT_PTR_NULL(fgets(line, LINE_SIZE, fstdout));
+    CU_ASSERT(feof(fstdout));
+    fclose(fstdout);
 }
 
 void simple_checkout_test(void)
 {
-  
+    const int LINE_SIZE = 512;
+    char line[LINE_SIZE];
+    int retval;
+    retval = beargit_init();
+    CU_ASSERT(0==retval);
+
+    retval = beargit_checkout("haha", 0);
+    CU_ASSERT(retval);
+
+    retval = beargit_checkout("haha", 1);
+    CU_ASSERT(!retval);
+
+    retval = beargit_branch();
+    CU_ASSERT(!retval);
+
+    retval = beargit_checkout("master", 0);
+    CU_ASSERT(!retval);
+
+    retval = beargit_checkout("haha", 0);
+    CU_ASSERT(!retval);
+
+    retval = beargit_branch();
+    CU_ASSERT(!retval);
+
+    FILE* fstdout = fopen("TEST_STDOUT", "r");
+    CU_ASSERT_PTR_NOT_NULL(fstdout);
+
+    CU_ASSERT_PTR_NOT_NULL(fgets(line, LINE_SIZE, fstdout));
+    CU_ASSERT_STRING_EQUAL(line, "No branch haha exists\n");
+
+    // CU_ASSERT_PTR_NOT_NULL(fgets(line, LINE_SIZE, fstdout));
+    // CU_ASSERT_STRING_EQUAL(line, "  master\n");
+    // CU_ASSERT_PTR_NOT_NULL(fgets(line, LINE_SIZE, fstdout));
+    // CU_ASSERT_STRING_EQUAL(line, "* haha\n");
+    
+    // CU_ASSERT_PTR_NULL(fgets(line, LINE_SIZE, fstdout));
+    // CU_ASSERT(feof(fstdout));
+    fclose(fstdout);
+
+
 }
+
+
 /* The main() function for setting up and running the tests.
  * Returns a CUE_SUCCESS on successful running, another
  * CUnit error code on failure.
@@ -173,6 +239,8 @@ int cunittester()
 {
    CU_pSuite pSuite = NULL;
    CU_pSuite pSuite2 = NULL;
+   CU_pSuite pSuite3 = NULL;
+   CU_pSuite pSuite4 = NULL;
 
    /* initialize the CUnit test registry */
    if (CUE_SUCCESS != CU_initialize_registry())
@@ -200,6 +268,32 @@ int cunittester()
 
    /* Add tests to the Suite #2 */
    if (NULL == CU_add_test(pSuite2, "Log output test", simple_log_test))
+   {
+      CU_cleanup_registry();
+      return CU_get_error();
+   }
+
+   pSuite3 = CU_add_suite("Suite_3", init_suite, clean_suite);
+   if (NULL == pSuite3) {
+      CU_cleanup_registry();
+      return CU_get_error();
+   }
+
+   /* Add tests to the Suite #2 */
+   if (NULL == CU_add_test(pSuite3, "Simple branch test", simple_branch_test))
+   {
+      CU_cleanup_registry();
+      return CU_get_error();
+   }
+
+   pSuite4 = CU_add_suite("Suite_4", init_suite, clean_suite);
+   if (NULL == pSuite4) {
+      CU_cleanup_registry();
+      return CU_get_error();
+   }
+
+   /* Add tests to the Suite #2 */
+   if (NULL == CU_add_test(pSuite4, "Simple checkout test", simple_checkout_test))
    {
       CU_cleanup_registry();
       return CU_get_error();
